@@ -1,15 +1,15 @@
 %define name nrpe
 %define version 3.0.1
-%define release 0.eon
+%define release 0.rgm
 %define nsusr nagios
-%define nsgrp eyesofnetwork
+%define nsgrp rgm
 %define nsport 5666
 %define ns_src_tmpfile "tmpfile.conf"
 
-%define eondir /srv/eyesofnetwork
-%define linkdir %{eondir}/%{name}
+%define rgmdir /srv/rgm
+%define linkdir %{rgmdir}/%{name}
 %define datadir %{linkdir}-%{version}
-%define plugindir %{eondir}/nagios/plugins
+%define plugindir %{rgmdir}/nagios/plugins
 
 %define isaix %(test "`uname -s`" = "AIX" && echo "1" || echo "0")
 %define islinux %(test "`uname -s`" = "Linux" && echo "1" || echo "0")
@@ -186,6 +186,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc Changelog LEGAL README.md
 
 %changelog
+* Mon Mar 04 2019 Michael Aubertin <maubertin@fr.scc.com> - 3.0.1-1.rgm
+- Initial fork 
+
 * Mon Feb 06 2017 Jean-Philippe Levy <jeanphilippe.levy@gmail.com> - 3.0.1-0.eon
 - packaged for EyesOfNetwork appliance 5.1
 
