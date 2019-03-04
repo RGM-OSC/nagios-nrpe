@@ -43,7 +43,7 @@
 Summary: Host/service/network monitoring agent for Nagios
 URL: http://www.nagios.org
 Name: %{name}
-Version: %{version}
+Version: 3.0.1
 Release: %{release}
 License: GPL
 Group: Application/System
