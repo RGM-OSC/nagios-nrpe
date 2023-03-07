@@ -1,43 +1,39 @@
-%define name nrpe-nrpe
-%define version 4.1.0
-%define release 0.rgm
-%define nsusr nagios
-%define nsgrp rgm
-%define nsport 5666
-%define ns_src_tmpfile "tmpfile.conf"
-
-%define rgmdir /srv/rgm
-%define linkdir %{rgmdir}/%{name}
-%define datadir %{linkdir}-%{version}
-%define plugindir %{rgmdir}/nagios/plugins
-
 %define isaix %(test "`uname -s`" = "AIX" && echo "1" || echo "0")
 %define islinux %(test "`uname -s`" = "Linux" && echo "1" || echo "0")
 
 %if %{isaix}
 	%define _prefix	/opt/nagios
-	%define _docdir %{_prefix}/doc/%{name}-%{version}
+	%define _docdir %{_prefix}/doc/@PACKAGE_NAME@-@PACKAGE_VERSION@
 	%define nshome /opt/nagios
 	%define _make gmake
 %endif
 %if %{islinux}
-	%define _init_dir /usr/lib/systemd/system
-	%define _exec_prefix %{datadir}/bin
-	%define _bindir %{datadir}/bin
-	%define _sbindir %{datadir}/sbin
-	%define _libexecdir %{plugindir} 
-	%define _datadir %{datadir}/share
-	%define _localstatedir /var/run/%{name}
-	%define nshome /var/run/%{name}
+	%define _init_dir @initdir@
+	%define _init_type @init_type@
+	%define _exec_prefix %{_prefix}/sbin
+	%define _bindir %{_prefix}/sbin
+	%define _sbindir %{_prefix}/lib/nagios/cgi
+	%define _libexecdir %{_prefix}/lib/nagios/plugins
+	%define _datadir %{_prefix}/share/nagios
+	%define _localstatedir /var/log/nagios
+	%define nshome /var/log/nagios
 	%define _make make
 %endif
-%define _sysconfdir %{datadir}/etc
+%define _sysconfdir /etc/nagios
+
+%define name @PACKAGE_NAME@
+%define version 4.1.0
+%define release @RPM_RELEASE@
+%define nsusr @nrpe_user@
+%define nsgrp @nrpe_group@
+%define nsport @nrpe_port@
+%define ns_src_tmpfile "@src_tmpfile@"
 
 # Reserve option to override port setting with:
 # rpm -ba|--rebuild --define 'nsport 5666'
 %{?port:%define nsport %{port}}
 
-# Macro that print mesages to syslog at package (un)install time
+# Macro that print messages to syslog at package (un)install time
 %define nnmmsg logger -t %{name}/rpm
 
 Summary: Host/service/network monitoring agent for Nagios
@@ -50,8 +46,8 @@ Group: Application/System
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-buildroot
 Prefix: %{_prefix}
-Prefix: /usr/lib/systemd/system
-Prefix: %{datadir}/etc
+Prefix: @initdir@
+Prefix: /etc/nagios
 %if %{isaix}
 Requires: nagios-plugins
 %endif
@@ -116,24 +112,23 @@ fi
 %endif
 %if %{islinux}
 if [ "$1" = 0 ]; then
-	/bin/systemctl stop nrpe > /dev/null 2>&1
-	/bin/systemctl disable nrpe	
+	/sbin/service nrpe stop > /dev/null 2>&1
+	/sbin/chkconfig --del nrpe
 fi
 %endif
 
 %if %{islinux}
 %postun
 if [ "$1" -ge "1" ]; then
-	/bin/systemctl condrestart nrpe >/dev/null 2>&1 || :
+	/sbin/service nrpe condrestart >/dev/null 2>&1 || :
 fi
-unlink %{linkdir} >/dev/null 2>&1
 %endif
 
 %build
 export PATH=$PATH:/usr/sbin
 CFLAGS="$RPM_OPT_FLAGS" CXXFLAGS="$RPM_OPT_FLAGS" \
 MAKE=%{_make} ./configure \
-	--with-init-dir=/etc/init.d \
+	--with-init-type=%{_init_type} \
 	--with-nrpe-port=%{nsport} \
 	--with-nrpe-user=%{nsusr} \
 	--with-nrpe-group=%{nsgrp} \
@@ -154,47 +149,35 @@ MAKE=%{_make} ./configure \
 install -d -m 0755 ${RPM_BUILD_ROOT}%{_init_dir}
 %endif
 DESTDIR=${RPM_BUILD_ROOT} %{_make} install-groups-users install install-config install-init
-sed -i 's/%{name}-%{version}/%{name}/g' ${RPM_BUILD_ROOT}/usr/lib/systemd/system/nrpe.service
 
-%post
-ln -sf %{datadir} %{linkdir}
-chown -Rh %{nsusr}:%{nsgrp} %{linkdir}*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+
 %files
 %if %{islinux}
 %defattr(755,root,root)
-/usr/lib/systemd/system/nrpe.service
+@initdir@/@initname@
 %endif
-%{_bindir}
-%{datadir}
+%{_bindir}/nrpe
 %dir %{_sysconfdir}
 %defattr(600,%{nsusr},%{nsgrp})
 %config(noreplace) %{_sysconfdir}/*.cfg
 %defattr(755,%{nsusr},%{nsgrp})
 %if %{ns_src_tmpfile} != ""
-/usr/lib/tmpfiles.d/nrpe.conf
+@tmpfilesd@
 %endif
-%doc LEGAL README.md README.SSL.md SECURITY.md CHANGELOG.md
+%{_bindir}/nrpe-uninstall
+%doc CHANGELOG.md LEGAL README.md README.SSL.md SECURITY.md
 
 %files plugin
 %defattr(755,%{nsusr},%{nsgrp})
 %{_libexecdir}
 %defattr(644,%{nsusr},%{nsgrp})
-%doc LEGAL README.md CHANGELOG.md
+%doc CHANGELOG.md LEGAL README.md
 
 %changelog
-* Tue Mar 07 2023 Alex Rocher <arocher@fr.scc.com> - 4.1.0-0.rgm
-- Upgrade to release 4.1.0
-
-* Mon Mar 04 2019 Michael Aubertin <maubertin@fr.scc.com> - 3.0.1-1.rgm
-- Initial fork
-
-* Mon Feb 06 2017 Jean-Philippe Levy <jeanphilippe.levy@gmail.com> - 3.0.1-0.eon
-- packaged for EyesOfNetwork appliance 5.1
-
 * Thu Aug 18 2016 John Frickson jfrickson<@>nagios.com
 - Changed 'make install-daemon-config' to 'make install-config'
 - Added make targets 'install-groups-users' and 'install-init'

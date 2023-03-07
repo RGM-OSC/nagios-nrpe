@@ -1,0 +1,13 @@
+
+
+language: c
+sudo: enabled
+dist:
+ - trusty
+compiler:
+ - clang
+ - gcc
+script: ./configure && make all && sudo ./test-wrapper
+arch:
+  - amd64
+  - ppc64le
