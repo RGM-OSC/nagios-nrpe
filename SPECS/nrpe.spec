@@ -1,6 +1,3 @@
-%define name nrpe-nrpe
-%define version 4.1.0
-%define release 0.rgm
 %define nsusr nagios
 %define nsgrp rgm
 %define nsport 5666
@@ -25,7 +22,7 @@
 	%define _exec_prefix %{datadir}/bin
 	%define _bindir %{datadir}/bin
 	%define _sbindir %{datadir}/sbin
-	%define _libexecdir %{plugindir} 
+	%define _libexecdir %{plugindir}
 	%define _datadir %{datadir}/share
 	%define _localstatedir /var/run/%{name}
 	%define nshome /var/run/%{name}
@@ -42,9 +39,9 @@
 
 Summary: Host/service/network monitoring agent for Nagios
 URL: http://www.nagios.org
-Name: %{name}
-Version: %{version}
-Release: %{release}
+Name: nrpe-nrpe
+Version: 4.1.0
+Release: 0.rgm
 License: GPL
 Group: Application/System
 Source0: %{name}-%{version}.tar.gz
@@ -60,10 +57,10 @@ Requires: bash, grep, nagios-plugins, util-linux, chkconfig, shadow-utils, sed, 
 %endif
 
 %description
-NPRE (Nagios Remote Plugin Executor) is a system daemon that 
-will execute various Nagios plugins locally on behalf of a 
-remote (monitoring) host that uses the check_nrpe plugin.  
-Various plugins that can be executed by the daemon are available 
+NPRE (Nagios Remote Plugin Executor) is a system daemon that
+will execute various Nagios plugins locally on behalf of a
+remote (monitoring) host that uses the check_nrpe plugin.
+Various plugins that can be executed by the daemon are available
 at: http://sourceforge.net/projects/nagiosplug
 
 This package provides the client-side NRPE agent (daemon).
@@ -74,13 +71,13 @@ Summary: Provides nrpe plugin for Nagios.
 Requires: nagios-plugins
 
 %description plugin
-NPRE (Nagios Remote Plugin Executor) is a system daemon that 
-will execute various Nagios plugins locally on behalf of a 
-remote (monitoring) host that uses the check_nrpe plugin.  
-Various plugins that can be executed by the daemon are available 
+NPRE (Nagios Remote Plugin Executor) is a system daemon that
+will execute various Nagios plugins locally on behalf of a
+remote (monitoring) host that uses the check_nrpe plugin.
+Various plugins that can be executed by the daemon are available
 at: http://sourceforge.net/projects/nagiosplug
 
-This package provides the server-side NRPE plugin for 
+This package provides the server-side NRPE plugin for
 Nagios-related applications.
 
 %prep
@@ -117,7 +114,7 @@ fi
 %if %{islinux}
 if [ "$1" = 0 ]; then
 	/bin/systemctl stop nrpe > /dev/null 2>&1
-	/bin/systemctl disable nrpe	
+	/bin/systemctl disable nrpe
 fi
 %endif
 
@@ -201,7 +198,7 @@ rm -rf $RPM_BUILD_ROOT
 - Misc. changes
 
 * Mon Mar 12 2012 Eric Stanley estanley<@>nagios.com
-- Created autoconf input file 
+- Created autoconf input file
 - Updated to support building on AIX
 - Updated install to use make install*
 
